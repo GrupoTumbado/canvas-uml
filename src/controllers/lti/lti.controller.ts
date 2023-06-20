@@ -1,16 +1,16 @@
-import { Controller, Post, Req } from "@nestjs/common";
+import { Controller, Get, Post, Req } from "@nestjs/common";
 import { Request } from "express";
 
 @Controller("lti")
 export class LtiController {
     constructor() {}
 
-    @Post("launch")
+    @Get("launch")
     async handleLaunchRequest(@Req() req: Request) {
         console.log(req);
     }
 
-    @Post("deeplinking")
+    @Get("deeplinking")
     async handleDeepLinkingRequest(@Req() req: Request) {
         console.log(req);
     }
