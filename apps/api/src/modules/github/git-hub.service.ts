@@ -11,7 +11,7 @@ export class GitHubService {
     constructor(private readonly configService: ConfigService, private readonly httpService: HttpService) {}
 
     getAuthHeader() {
-        return `Bearer ${this.configService.get("GITHUB_TOKEN", "")}`;
+        return `Bearer ${this.configService.get("GITHUB_TOKEN")}`;
     }
 
     async verifyRepoUrl(url: string) {
@@ -55,6 +55,26 @@ export class GitHubService {
 
             const languagesResponse: AxiosResponse<LanguagesDto> = await firstValueFrom(languagesObservable);
             return languagesResponse.data;
+        } catch (e) {
+            if (e instanceof AxiosError) {
+                throw new HttpException(e.response.data.message, e.response.status);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    async getRepositoryZip(gitHubRepo: GitHubRepoDto) {
+        try {
+            const zipObservable: Observable<AxiosResponse<any>> = this.httpService.get(
+                `${this.configService.get("GITHUB_URL", "https://api.github.com")}/repos/${gitHubRepo.owner}/${gitHubRepo.repo}/languages`,
+                {
+                    headers: { Authorization: this.getAuthHeader(), Accept: "application/vnd.github+json" },
+                },
+            );
+
+            const zipResponse: AxiosResponse<any> = await firstValueFrom(zipObservable);
+            return zipResponse.data;
         } catch (e) {
             if (e instanceof AxiosError) {
                 throw new HttpException(e.response.data.message, e.response.status);

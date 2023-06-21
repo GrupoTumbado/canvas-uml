@@ -14,7 +14,7 @@ export class LtiaasService {
 
         try {
             const idTokenObservable: Observable<AxiosResponse<IdTokenDto>> = this.httpService.get(
-                `https://${this.configService.get("LTIAAS_SUBDOMAIN", "")}.ltiaas.com/api/idtoken`,
+                `https://${this.configService.get("LTIAAS_SUBDOMAIN")}.ltiaas.com/api/idtoken`,
                 {
                     headers: { Authorization: authHeader },
                 },
