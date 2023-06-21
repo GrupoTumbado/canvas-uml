@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, Query, Req, Res } from "@nestjs/common";
 import { LtiService } from "./lti.service";
-import { LtiaasCallbackDto } from "./dto/ltiaas-callback.dto";
+import { LtiaasCallbackDto } from "../../dtos/ltiaas/ltiaas-callback.dto";
 
 @Controller("lti")
 export class LtiController {
