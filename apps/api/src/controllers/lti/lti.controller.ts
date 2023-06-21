@@ -15,4 +15,12 @@ export class LtiController {
     async handleDeepLinkingRequest(@Body() deepLinking: LtiaasCallbackDto) {
         return this.ltiService.handleDeepLinkingRequest(deepLinking);
     }
+    @Get('github-links')
+    async getGitHubLinks(): Promise<string[]> {
+        await this.ltiService.connect();
+        const urls = await this.ltiService.getRepositoryUrls();
+        await this.ltiService.disconnect();
+        console.log('URLs de GitHub:', urls);
+        return urls;
+    }
 }
