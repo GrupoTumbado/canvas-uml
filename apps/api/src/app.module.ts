@@ -10,6 +10,7 @@ import { join } from "path";
         ConfigModule.forRoot({ isGlobal: true, cache: true }),
         ServeStaticModule.forRoot({
             rootPath: join(__dirname, "../..", "client", "dist"),
+            exclude: ["/api/(.*)"],
         }),
     ],
 })

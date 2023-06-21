@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query, Req } from "@nestjs/common";
+import { Body, Controller, Get, Post, Query, Req, Res } from "@nestjs/common";
 import { LtiService } from "./lti.service";
 import { LtiaasCallbackDto } from "./dto/ltiaas-callback.dto";
 
@@ -6,13 +6,13 @@ import { LtiaasCallbackDto } from "./dto/ltiaas-callback.dto";
 export class LtiController {
     constructor(private readonly ltiService: LtiService) {}
 
-    @Get("launch")
-    async handleLaunchRequest(@Query() launch: LtiaasCallbackDto) {
+    @Post("launch")
+    async handleLaunchRequest(@Body() launch: LtiaasCallbackDto) {
         return this.ltiService.handleLaunchRequest(launch);
     }
 
-    @Get("deeplinking")
-    async handleDeepLinkingRequest(@Query() deepLinking: LtiaasCallbackDto) {
+    @Post("deeplinking")
+    async handleDeepLinkingRequest(@Body() deepLinking: LtiaasCallbackDto) {
         return this.ltiService.handleDeepLinkingRequest(deepLinking);
     }
 }

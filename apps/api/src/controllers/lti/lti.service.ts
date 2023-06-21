@@ -1,8 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { HttpService } from "@nestjs/axios";
 import { ConfigService } from "@nestjs/config";
 import { firstValueFrom, map, Observable } from "rxjs";
-import { AxiosResponse } from "axios";
+import { AxiosError, AxiosResponse } from "axios";
 import { IdTokenDto } from "./dto/id-token.dto";
 import { LtiaasCallbackDto } from "./dto/ltiaas-callback.dto";
 
@@ -24,14 +24,24 @@ export class LtiService {
             "",
         )}`;
 
-        const idTokenResponse: AxiosResponse<IdTokenDto> = await firstValueFrom(
-            this.httpService.get(`https://${this.configService.get("LTIAAS_SUBDOMAIN", "")}.ltiaas.com/api/idtoken`, {
-                headers: { Authorization: authHeader },
-            }),
-        );
+        try {
+            const idTokenObservable: Observable<AxiosResponse<IdTokenDto>> = this.httpService.get(
+                `https://${this.configService.get("LTIAAS_SUBDOMAIN", "")}.ltiaas.com/api/idtoken`,
+                {
+                    headers: { Authorization: authHeader },
+                },
+            );
 
-        const idToken: IdTokenDto = idTokenResponse.data;
-        console.log(idToken);
-        return idToken;
+            const idTokenResponse: AxiosResponse<IdTokenDto> = await firstValueFrom(idTokenObservable);
+
+            const idToken: IdTokenDto = idTokenResponse.data;
+            return idToken;
+        } catch (e) {
+            if (e instanceof AxiosError) {
+                throw new HttpException("Unauthorized", HttpStatus.UNAUTHORIZED);
+            } else {
+                throw e;
+            }
+        }
     }
 }
