@@ -46,16 +46,14 @@ function LaunchApp() {
                     ltik: searchParams.get("ltik"),
                     repoUrl: repoUrl,
                 }),
-            })
-                .then((res) => res.json())
-                .then((res) => {
-                    if (res.status > 200 && res.status < 300) {
-                        setRepoUrl("");
-                        setMessage("Entregado con éxito");
-                    } else {
-                        setMessage("Ocurrió un error");
-                    }
-                });
+            }).then((res) => {
+                if (res.status > 200 && res.status < 300) {
+                    setRepoUrl("");
+                    setMessage("Entregado con éxito");
+                } else {
+                    setMessage("Ocurrió un error");
+                }
+            });
         } catch (err) {
             console.log(err);
         }

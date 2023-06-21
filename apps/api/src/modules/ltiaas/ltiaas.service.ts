@@ -10,10 +10,7 @@ export class LtiaasService {
     constructor(private readonly configService: ConfigService, private readonly httpService: HttpService) {}
 
     async getIdToken(ltik: string) {
-        const authHeader: string = `LTIK-AUTH-V1 Token=${ltik}, Additional=Bearer ${this.configService.get(
-            "LTIAAS_KEY",
-            "",
-        )}`;
+        const authHeader: string = `LTIK-AUTH-V1 Token=${ltik}, Additional=Bearer ${this.configService.get("LTIAAS_KEY", "")}`;
 
         try {
             const idTokenObservable: Observable<AxiosResponse<IdTokenDto>> = this.httpService.get(
@@ -24,12 +21,10 @@ export class LtiaasService {
             );
 
             const idTokenResponse: AxiosResponse<IdTokenDto> = await firstValueFrom(idTokenObservable);
-
-            const idToken: IdTokenDto = idTokenResponse.data;
-            return idToken;
+            return idTokenResponse.data;
         } catch (e) {
             if (e instanceof AxiosError) {
-                throw new HttpException("Unauthorized", HttpStatus.UNAUTHORIZED);
+                throw new HttpException(e.response.data.error, e.response.status);
             } else {
                 throw e;
             }
