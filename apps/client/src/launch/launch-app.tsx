@@ -1,67 +1,86 @@
-import { Component } from "react";
+import { useEffect, useState } from "react";
 import "./launch-app.css";
 import LoadingSpinner from "../components/loading-spinner/loading-spinner";
 
-class LaunchApp extends Component {
-    state = {
-        isLoading: true,
-        auth: 401,
-    };
+function LaunchApp() {
+    const [isLoading, setIsLoading] = useState(true);
+    const [apiResponseCode, setApiResponseCode] = useState(0);
+    const [repoUrl, setRepoUrl] = useState("");
+    const [message, setMessage] = useState("");
 
-    private searchParams = new URLSearchParams(document.location.search);
+    const searchParams: URLSearchParams = new URLSearchParams(document.location.search);
 
-    async checkAuth(searchParams: URLSearchParams): Promise<number> {
+    useEffect(() => {
         try {
-            let res = await fetch(`/api/lti/launch`, {
+            fetch(`/api/lti/launch`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     ltik: searchParams.get("ltik"),
                 }),
+            }).then((res) => {
+                setApiResponseCode(res.status);
+                setIsLoading(false);
             });
-            await res.json();
-
-            return res.status;
         } catch (err) {
             console.log(err);
-            return 500;
+            setApiResponseCode(500);
+            setIsLoading(false);
+        }
+    }, []);
+
+    const renderUnauthorized = (
+        <>
+            <h1>No estás autorizado para acceder a este recurso</h1>
+        </>
+    );
+
+    function handleSubmit(e: { preventDefault: () => void }) {
+        e.preventDefault();
+
+        try {
+            fetch("https://httpbin.org/post", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: name,
+                }),
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    if (res.status === 200) {
+                        setRepoUrl("");
+                        setMessage("Entregado con éxito");
+                    } else {
+                        setMessage("Ocurrió un error");
+                    }
+                });
+        } catch (err) {
+            console.log(err);
         }
     }
 
-    async componentDidMount() {
-        const response = await this.checkAuth(this.searchParams);
-        this.setState({ auth: response, isLoading: false });
-    }
+    const renderSubmitForm = (
+        <div className="repoSubmit">
+            <form onSubmit={handleSubmit}>
+                <input
+                    type="text"
+                    value={repoUrl}
+                    placeholder="URL del repositorio"
+                    onChange={(e) => setRepoUrl(e.target.value)}
+                />
+                <button type="submit">Entregar</button>
+                <div className="message">{message ? <p>{message}</p> : null}</div>
+            </form>
+        </div>
+    );
 
-    private doRender(): JSX.Element {
-        if (this.state.auth < 200 || this.state.auth > 299) {
-            return (
-                <>
-                    <h1>No estás autorizado para acceder a este recurso</h1>
-                    <p>{this.state.auth}</p>
-                </>
-            );
-        }
-
-        return (
-            <>
-                <h1>AaaAAAA</h1>
-            </>
-        );
-    }
-
-    render() {
-        return (
-            <>
-                {this.state.isLoading ? (
-                    <div>
-                        <LoadingSpinner />
-                    </div>
-                ) : (
-                    this.doRender()
-                )}
-            </>
-        );
+    if (isLoading) {
+        return <LoadingSpinner />;
+    } else if (apiResponseCode > 200 && apiResponseCode < 300) {
+        return renderSubmitForm;
+    } else {
+        return renderUnauthorized;
     }
 }
 
