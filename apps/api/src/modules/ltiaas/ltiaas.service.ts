@@ -3,7 +3,7 @@ import { HttpService } from "@nestjs/axios";
 import { ConfigService } from "@nestjs/config";
 import { firstValueFrom, Observable } from "rxjs";
 import { AxiosError, AxiosResponse } from "axios";
-import { IdTokenDto } from "../dtos/ltiaas/id-token.dto";
+import { IdTokenDto } from "../../dtos/ltiaas/id-token.dto";
 
 @Injectable()
 export class LtiaasService {

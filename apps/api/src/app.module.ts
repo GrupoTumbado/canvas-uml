@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-import { LtiModule } from "./controllers/lti/lti.module";
+import { LtiModule } from "./modules/lti/lti.module";
 import { ServeStaticModule } from "@nestjs/serve-static";
 import { join } from "path";
 
