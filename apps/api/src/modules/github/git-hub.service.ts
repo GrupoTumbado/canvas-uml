@@ -5,16 +5,17 @@ import { firstValueFrom, Observable } from "rxjs";
 import { AxiosError, AxiosResponse } from "axios";
 import { GitHubRepoDto } from "../../dtos/github/git-hub-repo.dto";
 import { LanguagesDto } from "../../dtos/github/languages.dto";
+import { IdTokenDto } from "../../dtos/ltiaas/id-token.dto";
 
 @Injectable()
 export class GitHubService {
     constructor(private readonly configService: ConfigService, private readonly httpService: HttpService) {}
 
-    getAuthHeader() {
+    getAuthHeader(): string {
         return `Bearer ${this.configService.get("GITHUB_TOKEN")}`;
     }
 
-    async verifyRepoUrl(url: string) {
+    async verifyRepoUrl(url: string): Promise<GitHubRepoDto> {
         const testPattern: RegExp =
             /(?:git|https?|git@)(?::\/\/)?github.com[/|:][\w-]+?\/[\w.-]+\/?(?!=.git)(?:\.git(?:\/?|#[\w.\-_]+)?)?$/gi;
         const gitHubUrl: GitHubRepoDto = { isGitHubRepo: testPattern.test(url), url: url };
@@ -44,7 +45,7 @@ export class GitHubService {
         }
     }
 
-    async getRepositoryLanguages(gitHubRepo: GitHubRepoDto) {
+    async getRepositoryLanguages(gitHubRepo: GitHubRepoDto): Promise<LanguagesDto> {
         try {
             const languagesObservable: Observable<AxiosResponse<LanguagesDto>> = this.httpService.get(
                 `${this.configService.get("GITHUB_URL", "https://api.github.com")}/repos/${gitHubRepo.owner}/${gitHubRepo.repo}/languages`,

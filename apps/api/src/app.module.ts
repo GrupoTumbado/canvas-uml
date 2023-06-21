@@ -28,6 +28,7 @@ import { LtiModule } from "./modules/lti/lti.module";
                 redis: {
                     host: configService.get("REDIS_HOST"),
                     port: configService.get("REDIS_PORT"),
+                    db: 11,
                 },
             }),
             inject: [ConfigService],
