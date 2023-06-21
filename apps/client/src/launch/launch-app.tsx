@@ -12,7 +12,7 @@ function LaunchApp() {
 
     useEffect(() => {
         try {
-            fetch(`/api/lti/launch`, {
+            fetch("/api/lti/launch", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -39,16 +39,17 @@ function LaunchApp() {
         e.preventDefault();
 
         try {
-            fetch("https://httpbin.org/post", {
+            fetch("/api/lti/submit-assignment", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    name: name,
+                    ltik: searchParams.get("ltik"),
+                    repoUrl: repoUrl,
                 }),
             })
                 .then((res) => res.json())
                 .then((res) => {
-                    if (res.status === 200) {
+                    if (res.status > 200 && res.status < 300) {
                         setRepoUrl("");
                         setMessage("Entregado con éxito");
                     } else {
