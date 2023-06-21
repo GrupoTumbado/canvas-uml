@@ -27,7 +27,7 @@ export class LtiService {
     }
 
     async handleAssignmentSubmission(assignmentSubmission: AssignmentSubmissionDto) {
-        //const idToken: IdTokenDto = await this.litaasService.getIdToken(assignmentSubmission.ltik);
+        const idToken: IdTokenDto = await this.litaasService.getIdToken(assignmentSubmission.ltik);
         const gitHubRepo = await this.gitHubService.verifyRepoUrl(assignmentSubmission.repoUrl);
         const languages = await this.gitHubService.getRepositoryLanguages(gitHubRepo);
 

@@ -1,9 +1,10 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { LtiModule } from "./modules/lti/lti.module";
 import { ServeStaticModule } from "@nestjs/serve-static";
 import { join } from "path";
 import { MongooseModule } from "@nestjs/mongoose";
+import { BullModule } from "@nestjs/bull";
+import { LtiModule } from "./modules/lti/lti.module";
 
 @Module({
     imports: [
@@ -16,8 +17,18 @@ import { MongooseModule } from "@nestjs/mongoose";
         MongooseModule.forRootAsync({
             imports: [ConfigModule],
             useFactory: async (configService: ConfigService) => ({
-                uri: configService.get("MONGO_URI", ""),
-                dbName: configService.get("MONGO_DB", ""),
+                uri: configService.get("MONGO_URI"),
+                dbName: configService.get("MONGO_DB"),
+            }),
+            inject: [ConfigService],
+        }),
+        BullModule.forRootAsync({
+            imports: [ConfigModule],
+            useFactory: async (configService: ConfigService) => ({
+                redis: {
+                    host: configService.get("REDIS_HOST"),
+                    port: configService.get("REDIS_PORT"),
+                },
             }),
             inject: [ConfigService],
         }),
