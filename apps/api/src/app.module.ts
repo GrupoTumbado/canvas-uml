@@ -10,6 +10,7 @@ import { MongooseModule } from "@nestjs/mongoose";
         LtiModule,
         ConfigModule.forRoot({ isGlobal: true, cache: true }),
         ServeStaticModule.forRoot({
+            rootPath: join(__dirname, "client"),
             exclude: ["/api/(.*)"],
         }),
         MongooseModule.forRootAsync({
