@@ -68,7 +68,7 @@ export class GitHubService {
     async getRepositoryZip(gitHubRepo: GitHubRepoDto) {
         try {
             const zipObservable: Observable<AxiosResponse<any>> = this.httpService.get(
-                `${this.configService.get("GITHUB_URL", "https://api.github.com")}/repos/${gitHubRepo.owner}/${gitHubRepo.repo}/languages`,
+                `${this.configService.get("GITHUB_URL", "https://api.github.com")}/repos/${gitHubRepo.owner}/${gitHubRepo.repo}/zipball`,
                 {
                     headers: { Authorization: this.getAuthHeader(), Accept: "application/vnd.github+json" },
                 },
