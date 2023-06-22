@@ -18,11 +18,11 @@ import { GradingProgressEnum } from "../ltiaas/enums/grading-progress.enum";
 @Injectable()
 export class LtiService {
     constructor(
-      @InjectQueue("submissions") private submissionsQueue: Queue,
-      private readonly configService: ConfigService,
-      private readonly httpService: HttpService,
-      private readonly ltiaasService: LtiaasService,
-      private readonly gitHubService: GitHubService,
+        @InjectQueue("submissions") private submissionsQueue: Queue,
+        private readonly configService: ConfigService,
+        private readonly httpService: HttpService,
+        private readonly ltiaasService: LtiaasService,
+        private readonly gitHubService: GitHubService,
     ) {}
     async handleLaunchRequest(launch: LtiaasCallbackDto): Promise<IdTokenDto> {
         // TODO: Implementar lógica que permita cambiar lo que ve el usuario en el front para poder manejar más tipos de peticiones (no es necesario para el proyecto)
@@ -51,19 +51,18 @@ export class LtiService {
             }
         }
 
+        const score: ScoreDto = {
+            userId: idToken.user.id,
+            activityProgress: ActivityProgressEnum.Submitted,
+            gradingProgress: GradingProgressEnum.Pending,
+        };
+        await this.ltiaasService.submitScore(assignmentSubmission.ltik, idToken.launch.lineItemId, score);
+
         const submissionJob: SubmissionJobDto = {
             ltik: assignmentSubmission.ltik,
             idToken: idToken,
             gitHubRepo: gitHubRepo,
         };
         this.submissionsQueue.add(submissionJob);
-
-        const score: ScoreDto = {
-            userId: idToken.user.id,
-            activityProgress: ActivityProgressEnum.Submitted,
-            gradingProgress: GradingProgressEnum.Pending,
-        };
-
-        await this.ltiaasService.submitScore(assignmentSubmission.ltik, idToken.launch.lineItemId, score);
     }
 }
