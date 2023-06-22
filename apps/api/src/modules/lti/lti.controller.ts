@@ -23,4 +23,3 @@ export class LtiController {
         return this.ltiService.handleAssignmentSubmission(assignmentSubmission);
     }
 }
-

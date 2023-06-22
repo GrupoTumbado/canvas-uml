@@ -5,10 +5,8 @@ import { MongoController } from "./mongo.controller";
 import { MongoService } from "./mongo.service";
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: Link.name, schema: LinkSchema }]),
-  ],
-  controllers: [MongoController],
-  providers: [MongoService],
+    imports: [MongooseModule.forFeature([{ name: Link.name, schema: LinkSchema }])],
+    controllers: [MongoController],
+    providers: [MongoService],
 })
 export class LtiModule {}

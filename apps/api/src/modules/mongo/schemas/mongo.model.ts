@@ -3,11 +3,11 @@ import { Document } from "mongoose";
 
 @Schema()
 export class Link extends Document {
-  @Prop()
-  _id: string;
+    @Prop()
+    _id: string;
 
-  @Prop()
-  url: string;
+    @Prop()
+    url: string;
 }
 
 export const LinkSchema = SchemaFactory.createForClass(Link);
