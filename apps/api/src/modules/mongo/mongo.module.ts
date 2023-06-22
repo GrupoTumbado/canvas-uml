@@ -8,5 +8,6 @@ import { MongoService } from "./mongo.service";
     imports: [MongooseModule.forFeature([{ name: Submission.name, schema: SubmissionSchema }])],
     controllers: [MongoController],
     providers: [MongoService],
+    exports: [MongoService],
 })
 export class LtiModule {}
