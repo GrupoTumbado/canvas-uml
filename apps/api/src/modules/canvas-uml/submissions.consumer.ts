@@ -6,7 +6,7 @@ import { HttpService } from "@nestjs/axios";
 import { filter, firstValueFrom, map, Observable, reduce, tap } from "rxjs";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import * as FormData from "form-data";
-import { SubmissionJobDto } from "../../dtos/canvas-uml/submission-job.dto";
+import { SubmissionDataDto } from "../../dtos/canvas-uml/submission-data.dto";
 import { GitHubService } from "../github/git-hub.service";
 import { ScoreDto } from "../../dtos/ltiaas/score.dto";
 import { ActivityProgressEnum } from "../ltiaas/enums/activity-progress.enum";
@@ -26,7 +26,7 @@ export class SubmissionsConsumer {
 
     private readonly logger: Logger = new Logger(SubmissionsConsumer.name);
 
-    saveSvgToMongo(svgData: string, submissionJob: SubmissionJobDto): void {
+    saveSvgToMongo(svgData: string, submissionJob: SubmissionDataDto): void {
         //this.logger.log(`Saving submission - ${submissionJob.gitHubRepo.owner}/${submissionJob.gitHubRepo.repo}`);
         this.logger.log(
             `Saving submission from ${submissionJob.idToken.user.name} (${submissionJob.idToken.user.id}) @ ${submissionJob.idToken.launch.context.title} (${submissionJob.idToken.launch.resource.title})`,
@@ -41,7 +41,7 @@ export class SubmissionsConsumer {
         await this.ltiaasService.submitScore(job.data.ltik, job.data.idToken.launch.lineItemId, score);*/
     }
 
-    subscribeToSvgEvent(submissionJob: SubmissionJobDto): void {
+    subscribeToSvgEvent(submissionJob: SubmissionDataDto): void {
         try {
             this.httpService.axiosRef
                 .get(`http://192.168.1.15:3001/api/event/uml/svg/${submissionJob.javaToUmlId}`, {
@@ -67,7 +67,7 @@ export class SubmissionsConsumer {
         }
     }
 
-    async generateAndSaveSvg(submissionJob: SubmissionJobDto): Promise<void> {
+    async generateAndSaveSvg(submissionJob: SubmissionDataDto): Promise<void> {
         const svgObservable: Observable<AxiosResponse<any>> = this.httpService.get(
             `http://192.168.1.15:3001/api/uml/svg/${submissionJob.javaToUmlId}`,
         );
@@ -132,7 +132,7 @@ export class SubmissionsConsumer {
     }
 
     @Process()
-    async processSubmission(job: Job<SubmissionJobDto>): Promise<void> {
+    async processSubmission(job: Job<SubmissionDataDto>): Promise<void> {
         //this.logger.log(`Processing submission - ${job.data.gitHubRepo.owner}/${job.data.gitHubRepo.repo}`);
         this.logger.log(
             `Processing submission from ${job.data.idToken.user.name} (${job.data.idToken.user.id}) @ ${job.data.idToken.launch.context.title} (${job.data.idToken.launch.resource.title})`,
@@ -142,7 +142,7 @@ export class SubmissionsConsumer {
         formData.append("file", zip, { filename: `${job.data.gitHubRepo.owner}-${job.data.gitHubRepo.repo}.zip` });
 
         const zipUploadInfo: UploadInfoDto = await this.uploadZipToJ2U(formData);
-        const submissionJob: SubmissionJobDto = job.data;
+        const submissionJob: SubmissionDataDto = job.data;
         submissionJob.javaToUmlId = zipUploadInfo.id;
 
         this.generateAndSaveSvg(submissionJob);

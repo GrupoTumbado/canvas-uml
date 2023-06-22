@@ -8,7 +8,7 @@ import { LtiaasCallbackDto } from "../../dtos/ltiaas/ltiaas-callback.dto";
 import { LtiaasService } from "../ltiaas/ltiaas.service";
 import { AssignmentSubmissionDto } from "../../dtos/canvas-uml/assignment-submission.dto";
 import { GitHubService } from "../github/git-hub.service";
-import { SubmissionJobDto } from "../../dtos/canvas-uml/submission-job.dto";
+import { SubmissionDataDto } from "../../dtos/canvas-uml/submission-data.dto";
 import { ScoreDto } from "../../dtos/ltiaas/score.dto";
 import { GitHubRepoDto } from "../../dtos/github/git-hub-repo.dto";
 import { LanguagesDto } from "../../dtos/github/languages.dto";
@@ -61,7 +61,7 @@ export class LtiService {
         };
         await this.ltiaasService.submitScore(assignmentSubmission.ltik, idToken.launch.lineItemId, score);
 
-        const submissionJob: SubmissionJobDto = {
+        const submissionJob: SubmissionDataDto = {
             ltik: assignmentSubmission.ltik,
             idToken: idToken,
             gitHubRepo: gitHubRepo,
