@@ -7,6 +7,7 @@ function LaunchApp() {
     const [apiResponseCode, setApiResponseCode] = useState(0);
     const [repoUrl, setRepoUrl] = useState("");
     const [message, setMessage] = useState("");
+    const [submitted, setSubmitted] = useState(false);
 
     const searchParams: URLSearchParams = new URLSearchParams(document.location.search);
 
@@ -37,6 +38,7 @@ function LaunchApp() {
 
     function handleSubmit(e: { preventDefault: () => void }) {
         e.preventDefault();
+        setIsLoading(true);
 
         try {
             fetch("/api/lti/submit-assignment", {
@@ -50,8 +52,11 @@ function LaunchApp() {
                 if (res.status > 200 && res.status < 300) {
                     setRepoUrl("");
                     setMessage("Entregado con éxito");
+                    setIsLoading(false);
+                    setSubmitted(true);
                 } else {
                     setMessage("Ocurrió un error");
+                    setIsLoading(false);
                 }
             });
         } catch (err) {
@@ -68,7 +73,9 @@ function LaunchApp() {
                     placeholder="URL del repositorio"
                     onChange={(e) => setRepoUrl(e.target.value)}
                 />
-                <button type="submit">Entregar</button>
+                <button type="submit" disabled={submitted}>
+                    Entregar
+                </button>
                 <div className="message">{message ? <p>{message}</p> : null}</div>
             </form>
         </div>

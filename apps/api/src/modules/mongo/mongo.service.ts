@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { Submission } from "./schemas/submission.schema";
@@ -7,6 +7,8 @@ import { CreateSubmissionDto } from "../../dtos/mongo/create-submission.dto";
 @Injectable()
 export class MongoService {
     constructor(@InjectModel(Submission.name) private readonly submissionModel: Model<Submission>) {}
+
+    private readonly logger: Logger = new Logger(MongoService.name);
 
     async create(createSubmission: CreateSubmissionDto): Promise<Submission> {
         return await this.submissionModel.create(createSubmission);

@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { HttpService } from "@nestjs/axios";
 import { ConfigService } from "@nestjs/config";
 import { Queue } from "bull";
@@ -24,6 +24,9 @@ export class LtiService {
         private readonly ltiaasService: LtiaasService,
         private readonly gitHubService: GitHubService,
     ) {}
+
+    private readonly logger: Logger = new Logger(LtiService.name);
+
     async handleLaunchRequest(launch: LtiaasCallbackDto): Promise<IdTokenDto> {
         // TODO: Implementar lógica que permita cambiar lo que ve el usuario en el front para poder manejar más tipos de peticiones (no es necesario para el proyecto)
         return await this.ltiaasService.getIdToken(launch.ltik);

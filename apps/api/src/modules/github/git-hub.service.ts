@@ -1,15 +1,16 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { HttpException, Injectable, Logger } from "@nestjs/common";
 import { HttpService } from "@nestjs/axios";
 import { ConfigService } from "@nestjs/config";
-import { firstValueFrom, Observable } from "rxjs";
+import { firstValueFrom, map, Observable, reduce } from "rxjs";
 import { AxiosError, AxiosResponse } from "axios";
 import { GitHubRepoDto } from "../../dtos/github/git-hub-repo.dto";
 import { LanguagesDto } from "../../dtos/github/languages.dto";
-import { IdTokenDto } from "../../dtos/ltiaas/id-token.dto";
 
 @Injectable()
 export class GitHubService {
     constructor(private readonly configService: ConfigService, private readonly httpService: HttpService) {}
+
+    private readonly logger: Logger = new Logger(GitHubService.name);
 
     getAuthHeader(): string {
         return `Bearer ${this.configService.get("GITHUB_TOKEN")}`;
@@ -37,6 +38,7 @@ export class GitHubService {
             await firstValueFrom(repoObservable);
             return gitHubUrl;
         } catch (e) {
+            this.logger.error(e);
             if (e instanceof AxiosError) {
                 throw new HttpException(e.response.data.message, e.response.status);
             } else {
@@ -57,6 +59,7 @@ export class GitHubService {
             const languagesResponse: AxiosResponse<LanguagesDto> = await firstValueFrom(languagesObservable);
             return languagesResponse.data;
         } catch (e) {
+            this.logger.error(e);
             if (e instanceof AxiosError) {
                 throw new HttpException(e.response.data.message, e.response.status);
             } else {
@@ -65,18 +68,27 @@ export class GitHubService {
         }
     }
 
-    async getRepositoryZip(gitHubRepo: GitHubRepoDto) {
+    async getRepositoryZip(gitHubRepo: GitHubRepoDto): Promise<Buffer> {
         try {
-            const zipObservable: Observable<AxiosResponse<Blob>> = this.httpService.get(
+            const zipObservable: Observable<AxiosResponse<ArrayBuffer>> = this.httpService.get(
                 `${this.configService.get("GITHUB_URL", "https://api.github.com")}/repos/${gitHubRepo.owner}/${gitHubRepo.repo}/zipball`,
                 {
                     headers: { Authorization: this.getAuthHeader(), Accept: "application/vnd.github+json" },
+                    responseType: "arraybuffer",
                 },
             );
 
-            const zipResponse: AxiosResponse<Blob> = await firstValueFrom(zipObservable);
-            return zipResponse.data;
+            return await zipObservable
+                .pipe(
+                    reduce((acc: Buffer[], response: AxiosResponse<ArrayBuffer>) => {
+                        const chunk: Buffer = Buffer.from(response.data);
+                        return acc.concat(chunk);
+                    }, []),
+                    map((chunks: Buffer[]) => Buffer.concat(chunks)),
+                )
+                .toPromise();
         } catch (e) {
+            this.logger.error(e);
             if (e instanceof AxiosError) {
                 throw new HttpException(e.response.data.message, e.response.status);
             } else {

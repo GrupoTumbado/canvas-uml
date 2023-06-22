@@ -5,4 +5,5 @@ export class SubmissionJobDto {
     public ltik: string;
     public idToken: IdTokenDto;
     public gitHubRepo: GitHubRepoDto;
+    public javaToUmlId?: number;
 }
