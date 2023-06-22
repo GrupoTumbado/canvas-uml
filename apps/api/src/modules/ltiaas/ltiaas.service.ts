@@ -37,12 +37,13 @@ export class LtiaasService {
     }
 
     async submitScore(ltik: string, lineItemId: string, score: ScoreDto): Promise<void> {
-        this.logger.log(`Submitting score for ${score.userId} @ ${lineItemId}`);
         if (!lineItemId) {
             this.logger.error(`Could not find line item ${lineItemId}`);
             throw new HttpException("Could not find line item ID", HttpStatus.BAD_REQUEST);
         }
         lineItemId = encodeURIComponent(lineItemId);
+
+        this.logger.log(`Submitting score for ${score.userId} @ ${lineItemId}`);
 
         try {
             const scoreObservable: Observable<AxiosResponse<any>> = this.httpService.post(
