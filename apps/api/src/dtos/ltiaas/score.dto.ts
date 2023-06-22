@@ -2,6 +2,7 @@ import { IsNumber, IsOptional, IsString } from "class-validator";
 import { SubmissionDto } from "./score-dtos/submission.dto";
 import { ActivityProgressEnum } from "../../modules/ltiaas/enums/activity-progress.enum";
 import { GradingProgressEnum } from "../../modules/ltiaas/enums/grading-progress.enum";
+import { ExtensionDto } from "./score-dtos/extension.dto";
 
 export class ScoreDto {
     @IsString()
@@ -31,4 +32,7 @@ export class ScoreDto {
     @IsString()
     @IsOptional()
     public timestamp?: string;
+
+    @IsOptional()
+    public "https://canvas.instructure.com/lti/submission"?: ExtensionDto;
 }
