@@ -5,9 +5,11 @@ import { join } from "path";
 import { MongooseModule } from "@nestjs/mongoose";
 import { BullModule } from "@nestjs/bull";
 import { LtiModule } from "./modules/lti/lti.module";
+import { CanvasUmlModule } from "./modules/canvas-uml/canvas-uml.module";
 
 @Module({
     imports: [
+        CanvasUmlModule,
         LtiModule,
         ConfigModule.forRoot({ isGlobal: true, cache: true }),
         ServeStaticModule.forRoot({
@@ -28,7 +30,6 @@ import { LtiModule } from "./modules/lti/lti.module";
                 redis: {
                     host: configService.get("REDIS_HOST"),
                     port: configService.get("REDIS_PORT"),
-                    db: 11,
                 },
             }),
             inject: [ConfigService],
