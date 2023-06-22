@@ -41,13 +41,15 @@ export class LtiaasService {
         lineItemId = encodeURIComponent(lineItemId);
 
         try {
-            this.httpService.post(
+            const scoreObservable: Observable<AxiosResponse<any>> = this.httpService.post(
                 `https://${this.configService.get("LTIAAS_SUBDOMAIN")}.ltiaas.com/api/lineitems/${lineItemId}/scores`,
                 score,
                 {
                     headers: { Authorization: this.getAuthHeader(ltik) },
                 },
             );
+
+            const scoreResponse = await firstValueFrom(scoreObservable);
         } catch (e) {
             if (e instanceof AxiosError) {
                 throw new HttpException(e.response.data.error, e.response.status);
