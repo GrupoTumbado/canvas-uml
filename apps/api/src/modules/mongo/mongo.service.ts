@@ -18,11 +18,27 @@ export class MongoService {
         return this.submissionModel.find().exec();
     }
 
-    async findOne(id: string): Promise<Submission> {
-        return this.submissionModel.findOne({ _id: id }).exec();
+    async findMostRecentById(_id: string): Promise<Submission> {
+        return this.submissionModel.findOne({ _id }).sort({ timestamp: -1 }).exec();
     }
 
-    async delete(id: string) {
-        return this.submissionModel.findByIdAndRemove({ _id: id }).exec();
+    async findMostRecentByUserAndLineItem(userId: string, lineItemId: string): Promise<Submission> {
+        return this.submissionModel.findOne({ userId, lineItemId }).sort({ timestamp: -1 }).exec();
+    }
+
+    async findOneById(_id: string): Promise<Submission> {
+        return this.submissionModel.findOne({ _id }).exec();
+    }
+
+    async findOneByUserAndLineItem(userId: string, lineItemId: string): Promise<Submission> {
+        return this.submissionModel.findOne({ userId, lineItemId }).exec();
+    }
+
+    async delete(_id: string) {
+        return this.submissionModel.findByIdAndRemove({ _id }).exec();
+    }
+
+    async deleteByUserAndLineItem(userId: string, lineItemId: string) {
+        return this.submissionModel.findByIdAndRemove({ userId, lineItemId }).exec();
     }
 }
