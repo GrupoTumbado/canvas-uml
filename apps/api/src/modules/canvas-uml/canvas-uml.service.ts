@@ -8,13 +8,21 @@ export class CanvasUmlService {
 
     private readonly logger: Logger = new Logger(CanvasUmlService.name);
 
-    async getGitHubLinkById(id: string): Promise<string> {
-        const submission: Submission = await this.mongoService.findOne(id);
-
+    async getSubmissionById(id: string): Promise<Submission> {
+        const submission: Submission = await this.mongoService.findOneById(id);
         if (!submission) {
-            throw new HttpException("El enlace no fue encontrado", HttpStatus.NOT_FOUND);
+            throw new HttpException("La entrega no fue encontrada", HttpStatus.NOT_FOUND);
         }
 
-        return submission.url;
+        return submission;
+    }
+
+    async getSvgById(id: string): Promise<string> {
+        const submission: Submission = await this.mongoService.findOneById(id);
+        if (!submission) {
+            throw new HttpException("La imagen no fue encontrada", HttpStatus.NOT_FOUND);
+        }
+
+        return submission.svgData;
     }
 }
