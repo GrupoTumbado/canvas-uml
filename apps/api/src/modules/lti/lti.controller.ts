@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Req, Res } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, Req, Res } from "@nestjs/common";
 import { LtiService } from "./lti.service";
 import { LtiaasCallbackDto } from "../../dtos/ltiaas/ltiaas-callback.dto";
 import { AssignmentSubmissionDto } from "../../dtos/canvas-uml/assignment-submission.dto";
@@ -22,13 +22,5 @@ export class LtiController {
     async handleAssignmentSubmission(@Body() assignmentSubmission: AssignmentSubmissionDto): Promise<void> {
         return this.ltiService.handleAssignmentSubmission(assignmentSubmission);
     }
-
-    @Get("github-links")
-    async getGitHubLinks() {
-        /*await this.ltiService.connect();
-        const urls = await this.ltiService.getRepositoryUrls();
-        await this.ltiService.disconnect();
-        console.log('URLs de GitHub:', urls);
-        return urls;*/
-    }
 }
+

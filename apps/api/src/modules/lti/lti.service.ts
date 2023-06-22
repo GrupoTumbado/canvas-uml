@@ -18,13 +18,12 @@ import { GradingProgressEnum } from "../ltiaas/enums/grading-progress.enum";
 @Injectable()
 export class LtiService {
     constructor(
-        @InjectQueue("submissions") private submissionsQueue: Queue,
-        private readonly configService: ConfigService,
-        private readonly httpService: HttpService,
-        private readonly ltiaasService: LtiaasService,
-        private readonly gitHubService: GitHubService,
+      @InjectQueue("submissions") private submissionsQueue: Queue,
+      private readonly configService: ConfigService,
+      private readonly httpService: HttpService,
+      private readonly ltiaasService: LtiaasService,
+      private readonly gitHubService: GitHubService,
     ) {}
-
     async handleLaunchRequest(launch: LtiaasCallbackDto): Promise<IdTokenDto> {
         // TODO: Implementar lógica que permita cambiar lo que ve el usuario en el front para poder manejar más tipos de peticiones (no es necesario para el proyecto)
         return await this.ltiaasService.getIdToken(launch.ltik);
