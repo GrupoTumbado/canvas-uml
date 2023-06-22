@@ -15,8 +15,8 @@ export class SubmissionsConsumer {
     @Process()
     async processSubmission(job: Job<SubmissionJobDto>) {
         console.log("Processing job");
-        const zip = await this.gitHubService.getRepositoryZip(job.data.gitHubRepo);
-        console.log(zip);
+        const zip: Blob = await this.gitHubService.getRepositoryZip(job.data.gitHubRepo);
+
         /*const score: ScoreDto = {
             userId: job.data.idToken.user.id,
             activityProgress: ActivityProgressEnum.Submitted,

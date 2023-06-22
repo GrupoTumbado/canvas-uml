@@ -67,14 +67,14 @@ export class GitHubService {
 
     async getRepositoryZip(gitHubRepo: GitHubRepoDto) {
         try {
-            const zipObservable: Observable<AxiosResponse<any>> = this.httpService.get(
+            const zipObservable: Observable<AxiosResponse<Blob>> = this.httpService.get(
                 `${this.configService.get("GITHUB_URL", "https://api.github.com")}/repos/${gitHubRepo.owner}/${gitHubRepo.repo}/zipball`,
                 {
                     headers: { Authorization: this.getAuthHeader(), Accept: "application/vnd.github+json" },
                 },
             );
 
-            const zipResponse: AxiosResponse<any> = await firstValueFrom(zipObservable);
+            const zipResponse: AxiosResponse<Blob> = await firstValueFrom(zipObservable);
             return zipResponse.data;
         } catch (e) {
             if (e instanceof AxiosError) {
