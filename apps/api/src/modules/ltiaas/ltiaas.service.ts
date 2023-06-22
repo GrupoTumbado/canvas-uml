@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { HttpService } from "@nestjs/axios";
 import { ConfigService } from "@nestjs/config";
 import { firstValueFrom, Observable } from "rxjs";
@@ -9,6 +9,8 @@ import { ScoreDto } from "../../dtos/ltiaas/score.dto";
 @Injectable()
 export class LtiaasService {
     constructor(private readonly configService: ConfigService, private readonly httpService: HttpService) {}
+
+    private readonly logger: Logger = new Logger(LtiaasService.name);
 
     getAuthHeader(ltik: string): string {
         return `LTIK-AUTH-V1 Token=${ltik}, Additional=Bearer ${this.configService.get("LTIAAS_KEY", "")}`;
@@ -35,7 +37,9 @@ export class LtiaasService {
     }
 
     async submitScore(ltik: string, lineItemId: string, score: ScoreDto): Promise<void> {
+        this.logger.log(`Submitting score for ${score.userId} @ ${lineItemId}`);
         if (!lineItemId) {
+            this.logger.error(`Could not find line item ${lineItemId}`);
             throw new HttpException("Could not find line item ID", HttpStatus.BAD_REQUEST);
         }
         lineItemId = encodeURIComponent(lineItemId);
@@ -48,9 +52,10 @@ export class LtiaasService {
                     headers: { Authorization: this.getAuthHeader(ltik) },
                 },
             );
-
-            const scoreResponse = await firstValueFrom(scoreObservable);
+            await firstValueFrom(scoreObservable);
+            this.logger.log(`Successfully submitted score for ${score.userId} @ ${lineItemId}`);
         } catch (e) {
+            this.logger.error(e);
             if (e instanceof AxiosError) {
                 throw new HttpException(e.response.data.error, e.response.status);
             } else {
