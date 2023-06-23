@@ -62,7 +62,7 @@ export class SubmissionsConsumer {
                     },*/
                     {
                         type: "file",
-                        url: `https://javatouml.espana.pw/api/uml/svg?id=${submission._id}`,
+                        url: `https://umllti.espana.pw/api/uml/svg?id=${submission._id}`,
                         title: "Diagrama de Código",
                     },
                 ],
@@ -75,7 +75,7 @@ export class SubmissionsConsumer {
     subscribeToSvgEvent(submissionJob: SubmissionDataDto): void {
         try {
             this.httpService.axiosRef
-                .get(`http://192.168.1.15:3001/api/event/uml/svg/${submissionJob.javaToUmlId}`, {
+                .get(`https://javatouml.espana.pw/api/event/uml/svg/${submissionJob.javaToUmlId}`, {
                     responseType: "stream",
                     timeout: 0,
                 })
@@ -100,7 +100,7 @@ export class SubmissionsConsumer {
 
     async generateAndSaveSvg(submissionJob: SubmissionDataDto): Promise<void> {
         const svgObservable: Observable<AxiosResponse<any>> = this.httpService.get(
-            `http://192.168.1.15:3001/api/uml/svg/${submissionJob.javaToUmlId}`,
+            `https://javatouml.espana.pw/api/uml/svg/${submissionJob.javaToUmlId}`,
         );
 
         return await svgObservable
