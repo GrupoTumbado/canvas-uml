@@ -144,7 +144,7 @@ export class SubmissionsConsumer {
     async uploadZipToJ2U(zip: FormData): Promise<UploadInfoDto> {
         try {
             const zipUploadObservable: Observable<AxiosResponse<any>> = await this.httpService.post(
-                `http://192.168.1.15:3001/api/files`,
+                `https://javatouml.espana.pw/api/files`,
                 zip,
                 {
                     headers: {
