@@ -111,7 +111,6 @@ export class SubmissionsConsumer {
                         case "application/json+hal":
                             try {
                                 const data = response.data;
-                                this.logger.log(response.data);
                                 if (data && data.status && data.status === "ACCEPTED") {
                                     this.logger.log(
                                         `SVG for ${submissionJob.idToken.user.name} (${submissionJob.idToken.user.id}) @ ${submissionJob.idToken.launch.resource.title} (${submissionJob.idToken.launch.context.title}) is not ready, subscribing to SSE`,
