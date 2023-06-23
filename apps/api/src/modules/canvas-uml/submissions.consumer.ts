@@ -1,10 +1,10 @@
-import { HttpException, Logger } from "@nestjs/common";
+import { Logger } from "@nestjs/common";
 import { Process, Processor } from "@nestjs/bull";
 import { Job } from "bull";
 import { ConfigService } from "@nestjs/config";
 import { HttpService } from "@nestjs/axios";
-import { filter, firstValueFrom, map, Observable, reduce, tap } from "rxjs";
-import axios, { AxiosError, AxiosResponse } from "axios";
+import { firstValueFrom, map, Observable } from "rxjs";
+import { AxiosResponse } from "axios";
 import * as FormData from "form-data";
 import { SubmissionDataDto } from "../../dtos/canvas-uml/submission-data.dto";
 import { GitHubService } from "../github/git-hub.service";
@@ -13,8 +13,8 @@ import { ActivityProgressEnum } from "../ltiaas/enums/activity-progress.enum";
 import { GradingProgressEnum } from "../ltiaas/enums/grading-progress.enum";
 import { LtiaasService } from "../ltiaas/ltiaas.service";
 import { UploadInfoDto } from "../../dtos/canvas-uml/upload-info.dto";
-import { GitHubRepoDto } from "../../dtos/github/git-hub-repo.dto";
-import * as fs from "fs";
+import { MongoService } from "../mongo/mongo.service";
+import { SubmissionTypeEnum } from "../../dtos/ltiaas/score-dtos/enums/submission-type.enum";
 
 @Processor("submissions")
 export class SubmissionsConsumer {
@@ -22,23 +22,54 @@ export class SubmissionsConsumer {
         private readonly configService: ConfigService,
         private readonly httpService: HttpService,
         private readonly gitHubService: GitHubService,
+        private readonly mongoService: MongoService,
+        private readonly ltiaasService: LtiaasService,
     ) {}
 
     private readonly logger: Logger = new Logger(SubmissionsConsumer.name);
 
-    saveSvgToMongo(svgData: string, submissionJob: SubmissionDataDto): void {
-        //this.logger.log(`Saving submission - ${submissionJob.gitHubRepo.owner}/${submissionJob.gitHubRepo.repo}`);
+    async saveSvgToMongo(svgData: string, submissionJob: SubmissionDataDto): Promise<void> {
         this.logger.log(
-            `Saving submission from ${submissionJob.idToken.user.name} (${submissionJob.idToken.user.id}) @ ${submissionJob.idToken.launch.context.title} (${submissionJob.idToken.launch.resource.title})`,
+            `Saving submission from ${submissionJob.idToken.user.name} (${submissionJob.idToken.user.id}) @ ${submissionJob.idToken.launch.resource.title} (${submissionJob.idToken.launch.context.title})`,
         );
 
-        /*const score: ScoreDto = {
-            userId: job.data.idToken.user.id,
+        const submission = await this.mongoService.create({
+            userId: submissionJob.idToken.user.id,
+            lineItemId: submissionJob.idToken.launch.lineItemId,
+            submissionData: submissionJob,
+            svgData: svgData,
+            timestamp: Date.now(),
+        });
+
+        this.logger.log(
+            `Submission from ${submissionJob.idToken.user.name} (${submissionJob.idToken.user.id}) @ ${submissionJob.idToken.launch.resource.title} (${submissionJob.idToken.launch.context.title}) saved with ID ${submission._id}`,
+        );
+
+        const curDate: Date = new Date();
+        const score: ScoreDto = {
+            userId: submission.submissionData.idToken.user.id,
             activityProgress: ActivityProgressEnum.Submitted,
-            gradingProgress: GradingProgressEnum.Pending,
+            gradingProgress: GradingProgressEnum.PendingManual,
+            comment: `Repo de GitHub - ${submissionJob.gitHubRepo.url}`,
+            "https://canvas.instructure.com/lti/submission": {
+                submission_type: SubmissionTypeEnum.OnlineUpload,
+                submitted_at: curDate.toISOString(),
+                content_items: [
+                    /*{
+                        type: "file",
+                        url: submissionJob.gitHubRepo.url,
+                        title: "Repo de GitHub",
+                    },*/
+                    {
+                        type: "file",
+                        url: `https://javatouml.espana.pw/api/uml/svg?id=${submission._id}`,
+                        title: "Diagrama de Código",
+                    },
+                ],
+            },
         };
 
-        await this.ltiaasService.submitScore(job.data.ltik, job.data.idToken.launch.lineItemId, score);*/
+        await this.ltiaasService.submitScore(submission.submissionData.ltik, submission.submissionData.idToken.launch.lineItemId, score);
     }
 
     subscribeToSvgEvent(submissionJob: SubmissionDataDto): void {
@@ -79,20 +110,20 @@ export class SubmissionsConsumer {
                         case "application/json":
                         case "application/json+hal":
                             try {
-                                //const data = JSON.parse(response.data);
                                 const data = response.data;
                                 this.logger.log(response.data);
                                 if (data && data.status && data.status === "ACCEPTED") {
-                                    /*this.logger.log(
-                                        `SVG for ${submissionJob.gitHubRepo.owner}/${submissionJob.gitHubRepo.repo} is not ready, subscribing to SSE`,
-                                    );*/
                                     this.logger.log(
-                                        `SVG for ${submissionJob.idToken.user.name} (${submissionJob.idToken.user.id}) @ ${submissionJob.idToken.launch.context.title} (${submissionJob.idToken.launch.resource.title}) is not ready, subscribing to SSE`,
+                                        `SVG for ${submissionJob.idToken.user.name} (${submissionJob.idToken.user.id}) @ ${submissionJob.idToken.launch.resource.title} (${submissionJob.idToken.launch.context.title}) is not ready, subscribing to SSE`,
                                     );
                                     this.subscribeToSvgEvent(submissionJob);
                                 } else {
-                                    // Something broke. We should probably do something?
-                                    // Maybe send the error to Canvas, or mark the submission as pending
+                                    const score: ScoreDto = {
+                                        userId: submissionJob.idToken.user.id,
+                                        activityProgress: ActivityProgressEnum.Initialized,
+                                        gradingProgress: GradingProgressEnum.Failed,
+                                    };
+                                    this.ltiaasService.submitScore(submissionJob.ltik, submissionJob.idToken.launch.lineItemId, score);
                                 }
                             } catch (e) {
                                 this.logger.error(e);
@@ -133,18 +164,26 @@ export class SubmissionsConsumer {
 
     @Process()
     async processSubmission(job: Job<SubmissionDataDto>): Promise<void> {
-        //this.logger.log(`Processing submission - ${job.data.gitHubRepo.owner}/${job.data.gitHubRepo.repo}`);
-        this.logger.log(
-            `Processing submission from ${job.data.idToken.user.name} (${job.data.idToken.user.id}) @ ${job.data.idToken.launch.context.title} (${job.data.idToken.launch.resource.title})`,
-        );
-        const zip: Buffer = await this.gitHubService.getRepositoryZip(job.data.gitHubRepo);
-        const formData: FormData = new FormData();
-        formData.append("file", zip, { filename: `${job.data.gitHubRepo.owner}-${job.data.gitHubRepo.repo}.zip` });
+        try {
+            this.logger.log(
+                `Processing submission from ${job.data.idToken.user.name} (${job.data.idToken.user.id}) @ ${job.data.idToken.launch.resource.title} (${job.data.idToken.launch.context.title})`,
+            );
+            const zip: Buffer = await this.gitHubService.getRepositoryZip(job.data.gitHubRepo);
+            const formData: FormData = new FormData();
+            formData.append("file", zip, { filename: `${job.data.gitHubRepo.owner}-${job.data.gitHubRepo.repo}.zip` });
 
-        const zipUploadInfo: UploadInfoDto = await this.uploadZipToJ2U(formData);
-        const submissionJob: SubmissionDataDto = job.data;
-        submissionJob.javaToUmlId = zipUploadInfo.id;
+            const zipUploadInfo: UploadInfoDto = await this.uploadZipToJ2U(formData);
+            const submissionJob: SubmissionDataDto = job.data;
+            submissionJob.javaToUmlId = zipUploadInfo.id;
 
-        this.generateAndSaveSvg(submissionJob);
+            this.generateAndSaveSvg(submissionJob);
+        } catch (e) {
+            const score: ScoreDto = {
+                userId: job.data.idToken.user.id,
+                activityProgress: ActivityProgressEnum.Initialized,
+                gradingProgress: GradingProgressEnum.Failed,
+            };
+            this.ltiaasService.submitScore(job.data.ltik, job.data.idToken.launch.lineItemId, score);
+        }
     }
 }

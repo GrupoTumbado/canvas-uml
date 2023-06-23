@@ -56,8 +56,8 @@ export class LtiService {
 
         const score: ScoreDto = {
             userId: idToken.user.id,
-            activityProgress: ActivityProgressEnum.Submitted,
-            gradingProgress: GradingProgressEnum.Pending,
+            activityProgress: ActivityProgressEnum.Initialized,
+            gradingProgress: GradingProgressEnum.NotReady,
         };
         await this.ltiaasService.submitScore(assignmentSubmission.ltik, idToken.launch.lineItemId, score);
 
