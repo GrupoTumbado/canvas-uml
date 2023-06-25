@@ -6,7 +6,7 @@
     "dev": "turbo run dev --no-daemon",
     "format": "turbo run format --no-daemon",
     "build": "turbo run build",
-    "start": "node apps/api/dist/main",
+    "start": "node apps/dist/main",
     "build-and-start": "turbo run build && node apps/dist/main"
   },
   "workspaces": [
