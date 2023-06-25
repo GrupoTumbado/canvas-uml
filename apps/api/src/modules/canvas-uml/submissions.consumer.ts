@@ -62,7 +62,7 @@ export class SubmissionsConsumer {
                     },*/
                     {
                         type: "file",
-                        url: `https://umllti.espana.pw/api/uml/svg?id=${submission._id}`,
+                        url: `${this.configService.get("PUBLIC_API_URL")}/api/uml/svg?id=${submission._id}`,
                         title: "Diagrama de Código",
                     },
                 ],
@@ -75,7 +75,7 @@ export class SubmissionsConsumer {
     subscribeToSvgEvent(submissionJob: SubmissionDataDto): void {
         try {
             this.httpService.axiosRef
-                .get(`https://javatouml.espana.pw/api/event/uml/svg/${submissionJob.javaToUmlId}`, {
+                .get(`${this.configService.get("JAVA_TO_UML_URL")}/api/event/uml/svg/${submissionJob.javaToUmlId}`, {
                     responseType: "stream",
                     timeout: 0,
                 })
@@ -100,7 +100,7 @@ export class SubmissionsConsumer {
 
     async generateAndSaveSvg(submissionJob: SubmissionDataDto): Promise<void> {
         const svgObservable: Observable<AxiosResponse<any>> = this.httpService.get(
-            `https://javatouml.espana.pw/api/uml/svg/${submissionJob.javaToUmlId}`,
+            `${this.configService.get("JAVA_TO_UML_URL")}/api/uml/svg/${submissionJob.javaToUmlId}`,
         );
 
         return await svgObservable
@@ -143,7 +143,7 @@ export class SubmissionsConsumer {
     async uploadZipToJ2U(zip: FormData): Promise<UploadInfoDto> {
         try {
             const zipUploadObservable: Observable<AxiosResponse<any>> = await this.httpService.post(
-                `https://javatouml.espana.pw/api/files`,
+                `${this.configService.get("JAVA_TO_UML_URL")}/api/files`,
                 zip,
                 {
                     headers: {
